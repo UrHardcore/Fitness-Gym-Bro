@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0E0E10">
 
-<!-- Configuración PWA & iOS -->
+<!-- Configuración PWA & iOS / Android -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LiftLog">
 
-<!-- Archivo Manifest y Sw -->
+<!-- Íconos y Manifest -->
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
 
 <title>LiftLog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -227,7 +227,6 @@
   .reset-link{ margin-top: 22px; text-align:center; }
   .reset-link button{ background:none; border:none; color: var(--text-muted); font-size: 12px; cursor:pointer; text-decoration: underline; }
 
-  /* Modals */
   .modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.8); display: none;
@@ -291,7 +290,6 @@
   <div class="subline" id="subline">Cargando…</div>
   <div class="quote-box" id="quoteBox">"La constancia vence a la intensidad."</div>
 
-  <!-- Timer -->
   <div class="timer-card">
     <div>
       <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Descanso</div>
@@ -322,7 +320,6 @@
   </div>
 </div>
 
-<!-- Modal Histórico -->
 <div class="modal-overlay" id="chartModal">
   <div class="modal-card">
     <div class="modal-header">
@@ -333,7 +330,6 @@
   </div>
 </div>
 
-<!-- Modal Calculadora 1RM -->
 <div class="modal-overlay" id="rmModal">
   <div class="modal-card">
     <div class="modal-header">
@@ -349,7 +345,6 @@
   </div>
 </div>
 
-<!-- Modal Asistente Wizard Configuración de Rutina -->
 <div class="modal-overlay" id="wizardModal">
   <div class="modal-card">
     <div class="modal-header">
@@ -370,7 +365,6 @@
   </div>
 </div>
 
-<!-- Modal Onboarding / Tutorial -->
 <div class="modal-overlay" id="onboardingModal">
   <div class="modal-card" id="onboardingBody"></div>
 </div>
@@ -446,7 +440,6 @@
   }
 
   function playRonnieColemanAudio() {
-    // Intenta reproducir el audio externo y si falla o es bloqueado usa el sintetizador nativo
     const audio = new Audio("https://www.myinstants.com/media/sounds/yeah-buddy-lightweight.mp3");
     audio.play().catch(() => {
       if ('speechSynthesis' in window) {
@@ -719,7 +712,7 @@
     if(dayState[id]) { 
       streak++; 
       triggerConfetti(); 
-      playRonnieColemanAudio(); // Dispara Ronnie Coleman al tildar el día completo
+      playRonnieColemanAudio();
     } else { 
       streak = Math.max(0, streak - 1); 
     }
@@ -748,7 +741,6 @@
     render();
   }
 
-  /* Modals */
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
   function openChartModal(exName) {
@@ -903,7 +895,6 @@
     }
   }
 
-  /* Tutorial / Onboarding Modal direct access */
   function openTutorialModal() {
     obStep = 3;
     tutorialStep = 0;
@@ -1016,7 +1007,6 @@
     saveWeekState(); render();
   });
 
-  /* Registro Service Worker PWA */
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
