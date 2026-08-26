@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gimnasio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E0E10;
+    --surface: #18181B;
+    --surface-2: #202024;
+    --text: #EDEDEC;
+    --text-muted: #8A8A8E;
+    --accent: #C1443D;
+    --accent-soft: rgba(193,68,61,0.16);
+    --border: #2A2A2E;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  body{
+    display:flex;
+    justify-content:center;
+    padding: 32px 18px 60px;
+  }
+
+  .card{
+    width:100%;
+    max-width: 440px;
+  }
+
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .headline{
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    font-size: clamp(40px, 12vw, 58px);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .headline.rest{ color: var(--text-muted); }
+
+  .subline{
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .subline strong{ color: var(--text); font-weight: 600; }
+
+  /* Rutina de hoy */
+  .routine-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+  }
+
+  .routine-card .rc-title{
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .ex-list{
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap: 4px;
+  }
+
+  .ex-item{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 6px 4px;
+    cursor:pointer;
+    border-radius: 6px;
+  }
+
+  .ex-item:hover{ background: var(--surface-2); }
+
+  .ex-check{
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid var(--text-muted);
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all .15s ease;
+  }
+
+  .ex-item.checked .ex-check{
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .ex-check svg{ opacity:0; transition: opacity .12s ease; }
+  .ex-item.checked .ex-check svg{ opacity:1; }
+
+  .ex-name{
+    font-size: 14px;
+    color: var(--text);
+    transition: color .15s ease;
+  }
+
+  .ex-item.checked .ex-name{
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+
+  /* Sugeridos + agregar */
+  .add-section{
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .add-label{
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .chip{
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+
+  .chip:hover{
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .custom-row{
+    display:flex;
+    gap: 8px;
+  }
+
+  .custom-row input{
+    flex:1;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+  }
+
+  .custom-row input:focus{
+    outline:none;
+    border-color: var(--accent);
+  }
+
+  .custom-row input::placeholder{ color: var(--text-muted); }
+
+  .custom-row button{
+    background: var(--accent);
+    color: #0E0E10;
+    border:none;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor:pointer;
+    font-family: inherit;
+  }
+
+  .custom-row button:hover{ opacity: 0.9; }
+
+  /* Barra con discos */
+  .barbell{
+    display:flex;
+    align-items:center;
+    gap: 0;
+    margin: 8px 0 26px;
+    padding: 20px 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .bar-line{
+    flex:1;
+    height: 4px;
+    background: linear-gradient(90deg, var(--border), var(--text-muted), var(--border));
+    border-radius: 2px;
+    min-width: 8px;
+  }
+
+  .plate{
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    background: var(--surface-2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    cursor:pointer;
+    flex-shrink:0;
+    position:relative;
+    transition: transform .18s ease, border-color .25s ease, background .25s ease;
+  }
+
+  .plate:hover{ transform: translateY(-2px); }
+  .plate:active{ transform: scale(0.94); }
+
+  .plate .letter{
+    font-family:'Anton', sans-serif;
+    font-size: 18px;
+    color: var(--text-muted);
+    transition: color .25s ease;
+  }
+
+  .plate.done{
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .plate.done .letter{ color: #0E0E10; }
+
+  .plate.today:not(.done){
+    border-color: var(--text-muted);
+  }
+
+  .plate .dot{
+    position:absolute;
+    top:-3px;
+    right:-3px;
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background: var(--accent);
+    display:none;
+  }
+
+  .plate.today .dot{ display:block; }
+  .plate.today.done .dot{ background: var(--text); }
+
+  /* Lista */
+  .list{
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+    margin-bottom: 26px;
+  }
+
+  .row{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow:hidden;
+    transition: border-color .2s ease, background .2s ease;
+  }
+
+  .row.done{
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .row-main{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 14px 16px;
+    cursor:pointer;
+  }
+
+  .row-left{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+
+  .checkbox{
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--text-muted);
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all .2s ease;
+  }
+
+  .row.done .checkbox{
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .checkbox svg{ opacity:0; transition: opacity .15s ease; }
+  .row.done .checkbox svg{ opacity:1; }
+
+  .row-text{ display:flex; flex-direction:column; gap:2px; }
+
+  .row-label{
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .row.done .row-label{ color: var(--text); }
+
+  .row-group{
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .row-right{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+
+  .row-status{
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .row.done .row-status{ color: var(--accent); }
+
+  .chevron{
+    width: 22px;
+    height: 22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: var(--text-muted);
+    cursor:pointer;
+    transition: transform .2s ease;
+  }
+
+  .chevron.open{ transform: rotate(180deg); }
+
+  .row-exercises{
+    max-height: 0;
+    overflow:hidden;
+    transition: max-height .3s ease;
+    border-top: 1px solid transparent;
+  }
+
+  .row-exercises.open{
+    max-height: 520px;
+    border-top: 1px solid var(--border);
+  }
+
+  .row-exercises-inner{
+    padding: 14px 16px 16px 16px;
+  }
+
+  /* Progreso */
+  .progress-block{
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+  }
+
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .progress-top strong{
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .bar-track{
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 3px;
+    overflow:hidden;
+    border: 1px solid var(--border);
+  }
+
+  .bar-fill{
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width .4s ease;
+    border-radius: 3px;
+  }
+
+  .reset-link{
+    margin-top: 22px;
+    text-align:center;
+  }
+
+  .reset-link button{
+    background:none;
+    border:none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: inherit;
+    cursor:pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .reset-link button:hover{ color: var(--text); }
+
+  @media (max-width: 380px){
+    .plate{ width: 48px; height:48px; }
+    .plate .letter{ font-size:15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow" id="weekLabel">Semana</div>
+  <div class="headline" id="headline">—</div>
+  <div class="subline" id="subline">Cargando…</div>
+
+  <div class="routine-card" id="routineCard" style="display:none;"></div>
+
+  <div class="barbell" id="barbell"></div>
+
+  <div class="list" id="list"></div>
+
+  <div class="progress-block">
+    <div class="progress-top">
+      <span>Progreso semanal</span>
+      <strong id="progressText">0/4</strong>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="reset-link">
+    <button id="resetBtn">Reiniciar esta semana</button>
+  </div>
+</div>
+
+<script>
+  const BASE_DAYS = [
+    {
+      id: 'lunes', label: 'Lunes', short: 'L', jsDay: 1,
+      group: 'Tren superior',
+      exercises: ['Press de banca', 'Remo con barra', 'Press militar', 'Dominadas o jalón al pecho', 'Curl de bíceps', 'Extensión de tríceps']
+    },
+    {
+      id: 'martes', label: 'Martes', short: 'M', jsDay: 2,
+      group: 'Tren inferior',
+      exercises: ['Sentadilla', 'Peso muerto rumano', 'Prensa de piernas', 'Zancadas', 'Curl femoral', 'Elevación de talones']
+    },
+    {
+      id: 'jueves', label: 'Jueves', short: 'J', jsDay: 4,
+      group: 'Tren superior',
+      exercises: ['Press inclinado con mancuernas', 'Remo con mancuerna', 'Elevaciones laterales', 'Fondos en paralelas', 'Curl martillo', 'Press francés']
+    },
+    {
+      id: 'viernes', label: 'Viernes', short: 'V', jsDay: 5,
+      group: 'Tren inferior',
+      exercises: ['Sentadilla búlgara', 'Hip thrust', 'Extensión de cuádriceps', 'Curl femoral', 'Zancadas caminando', 'Pantorrillas de pie']
+    },
+  ];
+
+  const SUGGESTED = {
+    'Tren superior': ['Face pull en polea', 'Press de hombros con mancuernas', 'Remo en máquina', 'Curl inclinado con mancuernas'],
+    'Tren inferior': ['Peso muerto convencional', 'Puente de glúteos', 'Sentadilla frontal', 'Elevación de talones sentado'],
+  };
+
+  function getMonday(d){
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    date.setDate(date.getDate() + diff);
+    date.setHours(0,0,0,0);
+    return date;
+  }
+
+  function fmt(date){
+    return date.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' });
+  }
+
+  const today = new Date();
+  const monday = getMonday(today);
+  const sunday = new Date(monday); sunday.setDate(sunday.getDate()+6);
+  const weekKey = 'gym-week:' + monday.toISOString().slice(0,10);
+  const extraKey = 'gym-routine-extra';
+
+  const todayJs = today.getDay();
+  const todayEntry = BASE_DAYS.find(d => d.jsDay === todayJs);
+
+  let dayState = {};      // { [dayId]: boolean } día marcado como hecho
+  let exState = {};       // { [dayId]: { [exerciseName]: boolean } }
+  let extra = {};         // { [dayId]: [exerciseName, ...] } ejercicios agregados por el usuario
+  let expanded = {};      // { [dayId]: boolean } acordeón abierto
+
+  function fullExercises(d){
+    return d.exercises.concat(extra[d.id] || []);
+  }
+
+  async function loadState(){
+    try{
+      const res = await window.storage.get(weekKey, false);
+      const parsed = res && res.value ? JSON.parse(res.value) : {};
+      dayState = parsed.days || {};
+      exState = parsed.exercises || {};
+    }catch(e){
+      dayState = {};
+      exState = {};
+    }
+    BASE_DAYS.forEach(d => {
+      if(!(d.id in dayState)) dayState[d.id] = false;
+      if(!(d.id in exState)) exState[d.id] = {};
+    });
+
+    try{
+      const res2 = await window.storage.get(extraKey, false);
+      extra = res2 && res2.value ? JSON.parse(res2.value) : {};
+    }catch(e){
+      extra = {};
+    }
+  }
+
+  async function saveWeekState(){
+    try{
+      await window.storage.set(weekKey, JSON.stringify({ days: dayState, exercises: exState }), false);
+    }catch(e){
+      console.error('No se pudo guardar', e);
+    }
+  }
+
+  async function saveExtra(){
+    try{
+      await window.storage.set(extraKey, JSON.stringify(extra), false);
+    }catch(e){
+      console.error('No se pudo guardar', e);
+    }
+  }
+
+  function buildExerciseList(d, editable){
+    const ul = document.createElement('ul');
+    ul.className = 'ex-list';
+    fullExercises(d).forEach(ex => {
+      const checked = !!(exState[d.id] && exState[d.id][ex]);
+      const li = document.createElement('li');
+      li.className = 'ex-item' + (checked ? ' checked' : '');
+      li.innerHTML = `
+        <div class="ex-check">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="ex-name">${ex}</span>
+      `;
+      li.addEventListener('click', () => toggleExercise(d.id, ex));
+      ul.appendChild(li);
+    });
+
+    if(!editable) return ul;
+
+    const wrap = document.createDocumentFragment();
+    wrap.appendChild(ul);
+
+    const addSection = document.createElement('div');
+    addSection.className = 'add-section';
+
+    const availableSuggestions = (SUGGESTED[d.group] || []).filter(s => !fullExercises(d).includes(s));
+    if(availableSuggestions.length){
+      const label = document.createElement('div');
+      label.className = 'add-label';
+      label.textContent = 'Sugeridos para sumar';
+      addSection.appendChild(label);
+
+      const chipRow = document.createElement('div');
+      chipRow.className = 'chip-row';
+      availableSuggestions.forEach(s => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = '+ ' + s;
+        chip.addEventListener('click', () => addExercise(d.id, s));
+        chipRow.appendChild(chip);
+      });
+      addSection.appendChild(chipRow);
+    }
+
+    const customRow = document.createElement('div');
+    customRow.className = 'custom-row';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Agregar tu propio ejercicio';
+    const btn = document.createElement('button');
+    btn.textContent = 'Agregar';
+    btn.addEventListener('click', () => {
+      const val = input.value.trim();
+      if(val){
+        addExercise(d.id, val);
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        const val = input.value.trim();
+        if(val) addExercise(d.id, val);
+      }
+    });
+    customRow.appendChild(input);
+    customRow.appendChild(btn);
+    addSection.appendChild(customRow);
+
+    wrap.appendChild(addSection);
+    return wrap;
+  }
+
+  function render(){
+    document.getElementById('weekLabel').textContent =
+      `Semana del ${fmt(monday)} al ${fmt(sunday)}`;
+
+    const headline = document.getElementById('headline');
+    const subline = document.getElementById('subline');
+    const routineCard = document.getElementById('routineCard');
+
+    if(todayEntry){
+      const done = dayState[todayEntry.id];
+      headline.textContent = todayEntry.label;
+      headline.classList.remove('rest');
+      subline.innerHTML = done
+        ? `<strong>Ya entrenaste hoy.</strong> ${todayEntry.group}, buen trabajo.`
+        : `Hoy toca <strong>${todayEntry.group.toLowerCase()}</strong>. Marcalo cuando termines.`;
+
+      routineCard.style.display = 'block';
+      routineCard.innerHTML = '';
+      const title = document.createElement('div');
+      title.className = 'rc-title';
+      title.textContent = `Rutina de hoy · ${todayEntry.group}`;
+      routineCard.appendChild(title);
+      routineCard.appendChild(buildExerciseList(todayEntry, true));
+    } else {
+      headline.textContent = 'Descanso';
+      headline.classList.add('rest');
+      subline.textContent = 'Hoy no hay gimnasio en tu rutina.';
+      routineCard.style.display = 'none';
+    }
+
+    // Barbell
+    const barbell = document.getElementById('barbell');
+    barbell.innerHTML = '';
+    barbell.appendChild(makeBarSegment());
+    BASE_DAYS.forEach(d => {
+      barbell.appendChild(makePlate(d));
+      barbell.appendChild(makeBarSegment());
+    });
+
+    // List
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    BASE_DAYS.forEach(d => list.appendChild(makeRow(d)));
+
+    // Progress
+    const doneCount = BASE_DAYS.filter(d => dayState[d.id]).length;
+    document.getElementById('progressText').textContent = `${doneCount}/${BASE_DAYS.length}`;
+    document.getElementById('progressFill').style.width = `${(doneCount/BASE_DAYS.length)*100}%`;
+  }
+
+  function makeBarSegment(){
+    const seg = document.createElement('div');
+    seg.className = 'bar-line';
+    return seg;
+  }
+
+  function makePlate(d){
+    const el = document.createElement('div');
+    el.className = 'plate' + (dayState[d.id] ? ' done' : '') + (todayEntry && d.id === todayEntry.id ? ' today' : '');
+    el.innerHTML = `<span class="letter">${d.short}</span><span class="dot"></span>`;
+    el.addEventListener('click', () => toggleDay(d.id));
+    return el;
+  }
+
+  function makeRow(d){
+    const el = document.createElement('div');
+    el.className = 'row' + (dayState[d.id] ? ' done' : '');
+
+    const main = document.createElement('div');
+    main.className = 'row-main';
+    main.innerHTML = `
+      <div class="row-left">
+        <div class="checkbox">
+          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+            <path d="M1 5L4.5 8.5L11 1" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="row-text">
+          <span class="row-label">${d.label}${todayEntry && d.id===todayEntry.id ? ' · hoy' : ''}</span>
+          <span class="row-group">${d.group}</span>
+        </div>
+      </div>
+      <div class="row-right">
+        <span class="row-status">${dayState[d.id] ? 'Hecho' : 'Pendiente'}</span>
+        <div class="chevron${expanded[d.id] ? ' open' : ''}">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    `;
+
+    main.querySelector('.row-left').addEventListener('click', () => toggleDay(d.id));
+    main.querySelector('.row-right .row-status').addEventListener('click', () => toggleDay(d.id));
+    main.querySelector('.chevron').addEventListener('click', (e) => {
+      e.stopPropagation();
+      expanded[d.id] = !expanded[d.id];
+      render();
+    });
+
+    const exWrap = document.createElement('div');
+    exWrap.className = 'row-exercises' + (expanded[d.id] ? ' open' : '');
+    const inner = document.createElement('div');
+    inner.className = 'row-exercises-inner';
+    inner.appendChild(buildExerciseList(d, true));
+    exWrap.appendChild(inner);
+
+    el.appendChild(main);
+    el.appendChild(exWrap);
+    return el;
+  }
+
+  async function toggleDay(id){
+    dayState[id] = !dayState[id];
+    render();
+    await saveWeekState();
+  }
+
+  async function toggleExercise(dayId, exName){
+    if(!exState[dayId]) exState[dayId] = {};
+    exState[dayId][exName] = !exState[dayId][exName];
+    render();
+    await saveWeekState();
+  }
+
+  async function addExercise(dayId, exName){
+    if(!extra[dayId]) extra[dayId] = [];
+    if(!extra[dayId].includes(exName)){
+      extra[dayId].push(exName);
+      await saveExtra();
+    }
+    render();
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', async () => {
+    BASE_DAYS.forEach(d => {
+      dayState[d.id] = false;
+      exState[d.id] = {};
+    });
+    render();
+    await saveWeekState();
+  });
+
+  (async function init(){
+    await loadState();
+    render();
+  })();
+</script>
+
+</body>
+</html>
