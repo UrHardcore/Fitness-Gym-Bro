@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0E0E10">
 
-<!-- Configuración de PWA e Ícono SVG incrustado -->
+<!-- Configuración PWA & iOS -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LiftLog">
 
-<!-- Ícono Data URI (Pesa estilizada en SVG) -->
+<!-- Archivo Manifest y Sw -->
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
-
-<!-- Manifest Integrado (Data URI) -->
-<link rel="manifest" href="data:application/manifest+json;choice=1,%7B%22name%22%3A%22LiftLog%22%2C%22short_name%22%3A%22LiftLog%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230E0E10%22%2C%22theme_color%22%3A%22%230E0E10%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%253E%253Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%27110%27%20fill%3D%27%25230E0E10%27%2F%253E%253Cpath%20d%3D%27M120%20220h20v72h-20zM372%20220h20v72h-20z%27%20fill%3D%27%25238A8A8E%27%2F%253E%253Crect%20x%3D%27140%27%20y%3D%27196%27%20width%3D%2732%27%20height%3D%27120%27%20rx%3D%278%27%20fill%3D%27%2523C1443D%27%2F%253E%253Crect%20x%3D%27340%27%20y%3D%27196%27%20width%3D%2732%27%20height%3D%27120%27%20rx%3D%278%27%20fill%3D%27%2523C1443D%27%2F%253E%253Crect%20x%3D%27172%27%20y%3D%27216%27%20width%3D%2720%27%20height%3D%2780%27%20rx%3D%274%27%20fill%3D%27%2523202024%27%2F%253E%253Crect%20x%3D%27320%27%20y%3D%27216%27%20width%3D%2720%27%20height%3D%2780%27%20rx%3D%274%27%20fill%3D%27%2523202024%27%2F%253E%253Cpath%20d%3D%27M192%20246h128v20H192z%27%20fill%3D%27%2523EDEDEC%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
 <title>LiftLog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +68,7 @@
 
   .eyebrow{ font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
 
-  .top-actions { display: flex; gap: 6px; }
+  .top-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 
   .theme-toggle, .icon-nav-btn {
     background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
@@ -248,7 +246,6 @@
   .chart-container { width: 100%; height: 200px; position: relative; }
   canvas { width: 100%!important; height: 100%!important; }
 
-  /* Wizard & Onboarding Styles */
   .wizard-step-title { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
   .wizard-step-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
   .wizard-select {
@@ -263,7 +260,6 @@
   .wizard-item input { accent-color: var(--accent); width: 16px; height: 16px; }
   .wizard-nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; }
 
-  /* Train Overlay */
   .train-overlay { text-align: center; padding: 20px 0; }
   .train-title {
     font-family: 'Anton', sans-serif; font-size: 48px; color: var(--accent);
@@ -280,6 +276,7 @@
       <div class="eyebrow" id="weekLabel">Semana</div>
     </div>
     <div class="top-actions">
+      <button class="icon-nav-btn" onclick="openTutorialModal()">❓ Tutorial</button>
       <button class="icon-nav-btn" onclick="open1RMModal()">🧮 1RM</button>
       <button class="icon-nav-btn" onclick="openWizardModal()">⚙️ Rutina</button>
       <button class="theme-toggle" id="themeBtn">☀️ / 🌙</button>
@@ -373,7 +370,7 @@
   </div>
 </div>
 
-<!-- Modal Onboarding / Bienvenida General -->
+<!-- Modal Onboarding / Tutorial -->
 <div class="modal-overlay" id="onboardingModal">
   <div class="modal-card" id="onboardingBody"></div>
 </div>
@@ -448,9 +445,18 @@
     } catch(e){}
   }
 
-  function playRonnieAudio() {
+  function playRonnieColemanAudio() {
+    // Intenta reproducir el audio externo y si falla o es bloqueado usa el sintetizador nativo
     const audio = new Audio("https://www.myinstants.com/media/sounds/yeah-buddy-lightweight.mp3");
-    audio.play().catch(() => {});
+    audio.play().catch(() => {
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance("Yeah Buddy! Light Weight Baby!");
+        msg.pitch = 0.8;
+        msg.rate = 1.1;
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+      }
+    });
   }
 
   function triggerConfetti() {
@@ -710,8 +716,13 @@
 
   function toggleDay(id){
     dayState[id] = !dayState[id];
-    if(dayState[id]) { streak++; triggerConfetti(); playSuccessSound(); }
-    else { streak = Math.max(0, streak - 1); }
+    if(dayState[id]) { 
+      streak++; 
+      triggerConfetti(); 
+      playRonnieColemanAudio(); // Dispara Ronnie Coleman al tildar el día completo
+    } else { 
+      streak = Math.max(0, streak - 1); 
+    }
     saveStreak(); saveWeekState(); render();
   }
 
@@ -721,7 +732,7 @@
     
     const allEx = fullExercises(BASE_DAYS.find(b => b.id === dayId));
     if(allEx.length > 0 && allEx.every(e => exState[dayId][e]) && !dayState[dayId]) {
-      dayState[dayId] = true; streak++; saveStreak(); triggerConfetti(); playSuccessSound();
+      dayState[dayId] = true; streak++; saveStreak(); triggerConfetti(); playRonnieColemanAudio();
     }
     saveWeekState(); render();
   }
@@ -737,7 +748,7 @@
     render();
   }
 
-  /* Modals Logic */
+  /* Modals */
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
   function openChartModal(exName) {
@@ -786,7 +797,6 @@
     }
   }
 
-  /* Wizard Step-by-Step Logic */
   function openWizardModal() {
     wizardStep = 0;
     tempRoutine = JSON.parse(JSON.stringify(BASE_DAYS));
@@ -882,7 +892,7 @@
       BASE_DAYS = tempRoutine;
       localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
       closeModal('wizardModal');
-      if(!userName) { runOnboarding(); } else { render(); }
+      render();
     }
   }
 
@@ -893,7 +903,14 @@
     }
   }
 
-  /* Onboarding Flow */
+  /* Tutorial / Onboarding Modal direct access */
+  function openTutorialModal() {
+    obStep = 3;
+    tutorialStep = 0;
+    document.getElementById('onboardingModal').classList.add('active');
+    renderOnboardingStep();
+  }
+
   function runOnboarding() {
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
@@ -905,25 +922,10 @@
 
     if(obStep === 0) {
       b.innerHTML = `
-        <div class="wizard-step-title">¡Bienvenido/a!</div>
+        <div class="wizard-step-title">¡Bienvenido/a a LiftLog!</div>
         <div class="wizard-step-sub">Para empezar a armar tu experiencia, ¿cómo te llamás?</div>
         <input type="text" id="obNameInput" class="wizard-select" placeholder="Ingresá tu nombre" style="margin-bottom:20px;">
         <button class="timer-btn" style="width:100%; padding:10px; background:var(--accent); color:#0E0E10;" onclick="saveOnboardingName()">Siguiente ➔</button>
-      `;
-    } else if(obStep === 1) {
-      b.innerHTML = `
-        <div class="wizard-step-title">¡Hola, ${userName}! 👋</div>
-        <div class="wizard-step-sub">¡Vamos a personalizar tu rutina semanal de entrenamiento!</div>
-        <button class="timer-btn" style="width:100%; padding:10px; background:var(--accent); color:#0E0E10; margin-top:10px;" onclick="obStep=2; renderOnboardingStep();">Siguiente ➔</button>
-      `;
-    } else if(obStep === 2) {
-      b.innerHTML = `
-        <div class="wizard-step-title">Configuración de Rutina</div>
-        <div class="wizard-step-sub">Elegí la opción que prefieras para configurar tus días:</div>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
-          <button class="timer-btn" style="padding:12px; font-size:13px;" onclick="startOnboardingWizard()">➕ Agregar una rutina</button>
-          <button class="timer-btn" style="padding:12px; font-size:13px;" onclick="startOnboardingWizard()">📋 Ya tengo una rutina</button>
-        </div>
       `;
     } else if(obStep === 3) {
       const tuts = [
@@ -944,12 +946,12 @@
       b.innerHTML = `
         <div class="train-overlay">
           <div class="train-title">¡A ENTRENAR!</div>
-          <div style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Tu rutina ya está lista y guardada. ¡A darlo todo hoy!</div>
+          <div style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Tu rutina ya está lista. ¡A darlo todo hoy!</div>
           <button class="timer-btn" style="width:100%; padding:12px; background:var(--accent); color:#0E0E10; font-weight:700;" onclick="finishOnboarding()">¡VAMOS! 💪</button>
         </div>
       `;
       triggerConfetti();
-      playRonnieAudio();
+      playRonnieColemanAudio();
     }
   }
 
@@ -958,14 +960,9 @@
     if(v) {
       userName = v;
       localStorage.setItem(userNameKey, userName);
-      obStep = 1;
+      obStep = 3;
       renderOnboardingStep();
     }
-  }
-
-  function startOnboardingWizard() {
-    closeModal('onboardingModal');
-    openWizardModal();
   }
 
   function nextTutorialStep() {
@@ -1009,7 +1006,6 @@
     reader.readAsText(file);
   }
 
-  /* Theme Switcher */
   document.getElementById('themeBtn').addEventListener('click', () => {
     if(document.body.getAttribute('data-theme') === 'light') document.body.removeAttribute('data-theme');
     else document.body.setAttribute('data-theme', 'light');
@@ -1020,14 +1016,9 @@
     saveWeekState(); render();
   });
 
-  /* Service Worker Integrado para Offline PWA */
+  /* Registro Service Worker PWA */
   if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => e.waitUntil(caches.open('liftlog-v1').then(c => c.addAll(['./']))));
-      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
   loadState();
