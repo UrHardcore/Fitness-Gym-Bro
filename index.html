@@ -2,11 +2,23 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0E0E10">
+
+<!-- Configuración de PWA e Ícono SVG incrustado -->
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Gimnasio Pro Custom</title>
+<meta name="apple-mobile-web-app-title" content="LiftLog">
+
+<!-- Ícono Data URI (Pesa estilizada en SVG) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230E0E10'/%3E%3Cpath d='M120 220h20v72h-20zM372 220h20v72h-20z' fill='%238A8A8E'/%3E%3Crect x='140' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='340' y='196' width='32' height='120' rx='8' fill='%23C1443D'/%3E%3Crect x='172' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Crect x='320' y='216' width='20' height='80' rx='4' fill='%23202024'/%3E%3Cpath d='M192 246h128v20H192z' fill='%23EDEDEC'/%3E%3C/svg%3E">
+
+<!-- Manifest Integrado (Data URI) -->
+<link rel="manifest" href="data:application/manifest+json;choice=1,%7B%22name%22%3A%22LiftLog%22%2C%22short_name%22%3A%22LiftLog%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230E0E10%22%2C%22theme_color%22%3A%22%230E0E10%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%253E%253Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%27110%27%20fill%3D%27%25230E0E10%27%2F%253E%253Cpath%20d%3D%27M120%20220h20v72h-20zM372%20220h20v72h-20z%27%20fill%3D%27%25238A8A8E%27%2F%253E%253Crect%20x%3D%27140%27%20y%3D%27196%27%20width%3D%2732%27%20height%3D%27120%27%20rx%3D%278%27%20fill%3D%27%2523C1443D%27%2F%253E%253Crect%20x%3D%27340%27%20y%3D%27196%27%20width%3D%2732%27%20height%3D%27120%27%20rx%3D%278%27%20fill%3D%27%2523C1443D%27%2F%253E%253Crect%20x%3D%27172%27%20y%3D%27216%27%20width%3D%2720%27%20height%3D%2780%27%20rx%3D%274%27%20fill%3D%27%2523202024%27%2F%253E%253Crect%20x%3D%27320%27%20y%3D%27216%27%20width%3D%2720%27%20height%3D%2780%27%20rx%3D%274%27%20fill%3D%27%2523202024%27%2F%253E%253Cpath%20d%3D%27M192%20246h128v20H192z%27%20fill%3D%27%2523EDEDEC%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
+<title>LiftLog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +48,7 @@
     --card-shadow: rgba(0,0,0,0.05);
   }
 
-  *{ box-sizing: border-box; margin:0; padding:0; }
+  *{ box-sizing: border-box; margin:0; padding:0; user-select:none; }
 
   html,body{
     background: var(--bg);
@@ -52,137 +64,62 @@
     padding: 32px 18px 60px;
   }
 
-  .card{
-    width:100%;
-    max-width: 440px;
-    position: relative;
-  }
+  .card{ width:100%; max-width: 440px; position: relative; }
 
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 
-  .eyebrow{
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 600;
-  }
+  .eyebrow{ font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
 
-  .top-actions {
-    display: flex;
-    gap: 6px;
-  }
+  .top-actions { display: flex; gap: 6px; }
 
   .theme-toggle, .icon-nav-btn {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: 600;
+    display: flex; align-items: center; gap: 4px;
   }
 
   .streak-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 12px;
+    display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2);
+    border: 1px solid var(--border); padding: 4px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 12px;
   }
 
   .headline{
-    font-family: 'Anton', sans-serif;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    font-size: clamp(40px, 12vw, 58px);
-    line-height: 0.95;
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 0.01em;
+    font-size: clamp(40px, 12vw, 58px); line-height: 0.95; text-transform: uppercase; margin-bottom: 4px;
   }
 
   .headline.rest{ color: var(--text-muted); }
 
-  .subline{
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-  }
-
+  .subline{ font-size: 14px; color: var(--text-muted); margin-bottom: 12px; }
   .subline strong{ color: var(--text); font-weight: 600; }
 
   .quote-box {
-    font-size: 12px;
-    font-style: italic;
-    color: var(--text-muted);
-    border-left: 2px solid var(--accent);
-    padding-left: 8px;
-    margin-bottom: 20px;
+    font-size: 12px; font-style: italic; color: var(--text-muted);
+    border-left: 2px solid var(--accent); padding-left: 8px; margin-bottom: 20px;
   }
 
   .timer-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;
   }
 
-  .timer-display {
-    font-family: 'Anton', sans-serif;
-    font-size: 24px;
-    letter-spacing: 1px;
-    color: var(--text);
-  }
-
+  .timer-display { font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: 1px; color: var(--text); }
   .timer-btn-group { display: flex; gap: 6px; }
 
   .timer-btn {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
   }
 
   .routine-card{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 10px;
-    padding: 16px 18px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 12px var(--card-shadow);
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; box-shadow: 0 4px 12px var(--card-shadow);
   }
 
   .routine-card .rc-title{
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 10px;
   }
 
   .ex-list{ list-style:none; display:flex; flex-direction:column; gap: 8px; }
@@ -196,9 +133,8 @@
   .ex-main-click{ display:flex; align-items:center; gap: 10px; flex:1; cursor:pointer; }
 
   .ex-check{
-    width: 18px; height: 18px; border-radius: 4px;
-    border: 2px solid var(--text-muted); flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
+    width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--text-muted);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
   }
 
   .ex-item.checked .ex-check{ background: var(--accent); border-color: var(--accent); }
@@ -209,47 +145,39 @@
   .ex-item.checked .ex-name{ color: var(--text-muted); text-decoration: line-through; }
 
   .ex-inputs{ display:flex; align-items:center; gap: 4px; }
-
   .ex-inputs input{
-    width: 42px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text); font-size: 12px; padding: 4px 2px; text-align: center;
+    width: 42px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-size: 12px; padding: 4px 2px; text-align: center;
   }
 
   .action-icon-btn {
     background: none; border: none; color: var(--text-muted);
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: center; padding: 3px; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 3px; font-size: 14px;
   }
 
   .add-section{ margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   .custom-row{ display:flex; gap: 8px; }
 
   .custom-row input{
-    flex:1; background: var(--surface-2);
-    border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 12px; font-size: 13px; color: var(--text);
+    flex:1; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--text);
   }
 
   .custom-row button{
-    background: var(--accent); color: #0E0E10;
-    border:none; border-radius: 8px; padding: 0 14px;
-    font-size: 13px; font-weight: 700; cursor:pointer;
+    background: var(--accent); color: #0E0E10; border:none;
+    border-radius: 8px; padding: 0 14px; font-size: 13px; font-weight: 700; cursor:pointer;
   }
 
   .barbell{
-    display:flex; align-items:center; gap: 0;
-    margin: 8px 0 26px; padding: 16px 4px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; overflow-x: auto;
+    display:flex; align-items:center; gap: 0; margin: 8px 0 26px; padding: 16px 4px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto;
   }
 
   .bar-line{ flex:1; height: 4px; background: linear-gradient(90deg, var(--border), var(--text-muted), var(--border)); min-width: 6px; }
 
   .plate{
-    width: 44px; height: 44px; border-radius: 50%;
-    border: 2px solid var(--border); background: var(--surface-2);
-    display:flex; align-items:center; justify-content:center;
+    width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border);
+    background: var(--surface-2); display:flex; align-items:center; justify-content:center;
     cursor:pointer; flex-shrink:0; position:relative;
   }
 
@@ -265,7 +193,6 @@
   .plate.today .dot{ display:block; }
 
   .list{ display:flex; flex-direction:column; gap: 8px; margin-bottom: 26px; }
-
   .row{ background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow:hidden; }
   .row.done{ background: var(--accent-soft); border-color: var(--accent); }
 
@@ -336,17 +263,11 @@
   .wizard-item input { accent-color: var(--accent); width: 16px; height: 16px; }
   .wizard-nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; }
 
-  /* Big Train Overlay */
-  .train-overlay {
-    text-align: center; padding: 20px 0;
-  }
+  /* Train Overlay */
+  .train-overlay { text-align: center; padding: 20px 0; }
   .train-title {
-    font-family: 'Anton', sans-serif;
-    font-size: 48px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
+    font-family: 'Anton', sans-serif; font-size: 48px; color: var(--accent);
+    letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase;
   }
 </style>
 </head>
@@ -1005,7 +926,6 @@
         </div>
       `;
     } else if(obStep === 3) {
-      // Mini Tutorial Interactivo
       const tuts = [
         { title: '📌 Registro Diario', text: 'Tildá las casillas de los ejercicios a medida que los completes para ir aumentando tu racha diaria.' },
         { title: '⏱️ Temporizador', text: 'Usá los botones de 60s, 90s o 2m entre series para controlar tus tiempos de descanso exactos.' },
@@ -1021,7 +941,6 @@
         </button>
       `;
     } else if(obStep === 4) {
-      // Big Final Overlay
       b.innerHTML = `
         <div class="train-overlay">
           <div class="train-title">¡A ENTRENAR!</div>
@@ -1069,7 +988,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'gym_backup.json';
+    a.download = 'liftlog_backup.json';
     a.click();
   }
 
@@ -1101,10 +1020,10 @@
     saveWeekState(); render();
   });
 
-  /* Service Worker para PWA Offline */
+  /* Service Worker Integrado para Offline PWA */
   if ('serviceWorker' in navigator) {
     const swCode = `
-      self.addEventListener('install', e => e.waitUntil(caches.open('gym-v1').then(c => c.addAll(['./']))));
+      self.addEventListener('install', e => e.waitUntil(caches.open('liftlog-v1').then(c => c.addAll(['./']))));
       self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
     `;
     const blob = new Blob([swCode], { type: 'application/javascript' });
