@@ -378,7 +378,7 @@
       <div class="eyebrow" id="weekLabel">Semana</div>
     </div>
     <div class="top-actions">
-      <button class="icon-nav-btn" onclick="openScienceModal()">📚 Ciencia</button>
+      <button class="icon-nav-btn" onclick="openScienceModal()">🔬 Ciencia</button>
       <button class="icon-nav-btn" onclick="openTutorialModal()">❓ Tutorial</button>
       <button class="icon-nav-btn" onclick="open1RMModal()">🧮 1RM</button>
       <button class="icon-nav-btn" onclick="openWizardModal()">⚙️ Rutina</button>
@@ -669,8 +669,10 @@
   const TUTORIALS_LIST = [
     { title: '📌 Registro Diario', text: 'Tildá las casillas de los ejercicios a medida que los completes para ir aumentando tu racha diaria.' },
     { title: '⏱️ Temporizador', text: 'Usá los botones de 60s, 90s o 2m entre series para controlar tus tiempos de descanso exactos.' },
-    { title: '📈 Progresión y Ciencia', text: 'Agregá series, tocá 📈 para ver tu gráfico y tocá el ícono 🧠 en cualquier ejercicio para leer la biomecánica y fundamento científico respaldado.' },
-    { title: '⚙️ Gestión de Rutina', text: 'Para agregar cualquier ejercicio extra o modificar tu rutina semanal completa en el futuro, tenés que ir siempre a la opción de Rutina (⚙️) arriba a la derecha.' }
+    { title: '📈 Progresión', text: 'Agregá series según tu rendimiento y tocá el ícono 📈 para ver tu gráfico de evolución de cargas detallado.' },
+    { title: '⚙️ Cambiar y Modificar Rutina', text: 'Para cambiar o modificar tu rutina en cualquier momento, debés ir al botón que dice "Rutina" en la parte superior.' },
+    { title: '🧠 Ícono del Cerebro', text: 'Tocá el ícono de cerebro 🧠 al lado de cualquier ejercicio para abrir su ficha con la anatomía y biomecánica detallada.' },
+    { title: '🔬 Símbolo de Ciencia', text: 'Representa el enfoque basado en evidencia científica respaldada para maximizar la hipertrofia y el crecimiento muscular de forma segura.' }
   ];
 
   function isCardioExercise(exName) {
@@ -1367,13 +1369,13 @@
     } else if(obStep === 3) {
       const cur = TUTORIALS_LIST[tutorialStep];
       b.innerHTML = `
-        <div class="wizard-step-title">Tutorial (${tutorialStep + 1}/4)</div>
+        <div class="wizard-step-title">Tutorial (${tutorialStep + 1}/${TUTORIALS_LIST.length})</div>
         <div style="font-size:16px; font-weight:700; margin:10px 0 4px;">${cur.title}</div>
         <div class="wizard-step-sub">${cur.text}</div>
         <div class="wizard-nav" style="margin-top:20px;">
           <button class="timer-btn" ${tutorialStep === 0 ? 'style="visibility:hidden;"' : ''} onclick="prevTutorialPaginated()">Anterior</button>
           <button class="timer-btn" style="background:var(--accent); color:#0E0E10;" onclick="nextTutorialPaginated()">
-            ${tutorialStep === 3 ? (isDirectTutorial ? 'Finalizar ✖' : 'Siguiente ➔') : 'Siguiente ➔'}
+            ${tutorialStep === TUTORIALS_LIST.length - 1 ? (isDirectTutorial ? 'Finalizar ✖' : 'Siguiente ➔') : 'Siguiente ➔'}
           </button>
         </div>
       `;
@@ -1417,7 +1419,7 @@
   }
 
   function nextTutorialPaginated() {
-    if(tutorialStep < 3) {
+    if(tutorialStep < TUTORIALS_LIST.length - 1) {
       tutorialStep++;
       renderOnboardingStep();
     } else {
