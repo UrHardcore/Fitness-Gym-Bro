@@ -555,7 +555,7 @@
   let dayState = {}, exState = {}, extra = {}, historyData = {}, streak = 0, expanded = {};
   let timerInterval = null, timerSeconds = 0;
   let wizardStep = 0, tempRoutine = [], userName = '';
-  let obStep = 0, tutorialStep = 0;
+  let obStep = 0, tutorialStep = 0, isDirectTutorial = false;
 
   const TUTORIALS_LIST = [
     { title: '📌 Registro Diario', text: 'Tildá las casillas de los ejercicios a medida que los completes para ir aumentando tu racha diaria.' },
@@ -995,7 +995,6 @@
         diffEl.style.color = 'var(--text-muted)';
       }
 
-      // Construcción de tabla visual de anomalías / comparaciones / rankings
       let tableHtml = `
         <div style="font-size:12px; font-weight:700; margin:14px 0 6px; color:var(--text);">📋 Historial y Comparativas (Ranking / Anomalías)</div>
         <table class="data-table">
@@ -1187,14 +1186,16 @@
   }
 
   function openTutorialModal() {
-    obStep = 3; // Modo visualización paginada de tutoriales del 1 al 4
+    obStep = 3; 
     tutorialStep = 0;
+    isDirectTutorial = true; // Marcamos que se abrió desde el botón superior
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
   }
 
   function runOnboarding() {
     obStep = 0;
+    isDirectTutorial = false; // Viene del flujo inicial de registro
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
   }
@@ -1224,7 +1225,6 @@
         </div>
       `;
     } else if(obStep === 3) {
-      // Tutorial paginado del 1 al 4
       const cur = TUTORIALS_LIST[tutorialStep];
       b.innerHTML = `
         <div class="wizard-step-title">Tutorial (${tutorialStep + 1}/4)</div>
@@ -1233,21 +1233,11 @@
         <div class="wizard-nav" style="margin-top:20px;">
           <button class="timer-btn" ${tutorialStep === 0 ? 'style="visibility:hidden;"' : ''} onclick="prevTutorialPaginated()">Anterior</button>
           <button class="timer-btn" style="background:var(--accent); color:#0E0E10;" onclick="nextTutorialPaginated()">
-            ${tutorialStep === 3 ? 'Finalizar ✖' : 'Siguiente ➔'}
+            ${tutorialStep === 3 ? (isDirectTutorial ? 'Finalizar ✖' : 'Siguiente ➔') : 'Siguiente ➔'}
           </button>
         </div>
       `;
     } else if(obStep === 4) {
-      // Pantalla final antes de entrenar en el onboarding inicial
-      b.innerHTML = `
-        <div class="wizard-step-title">Tutorial (4/4)</div>
-        <div style="font-size:16px; font-weight:700; margin:10px 0 4px;">⚙️ Gestión de Rutina</div>
-        <div class="wizard-step-sub">Para agregar cualquier ejercicio extra o modificar tu rutina semanal completa en el futuro, tenés que ir siempre a la opción de <strong>Rutina (⚙️)</strong> arriba a la derecha.</div>
-        <button class="timer-btn" style="width:100%; padding:10px; background:var(--accent); color:#0E0E10; margin-top:14px;" onclick="showFinalTrainScreen()">
-          Finalizar Tutorial ➔
-        </button>
-      `;
-    } else if(obStep === 5) {
       b.innerHTML = `
         <div class="train-overlay">
           <div class="train-title">¡A ENTRENAR!</div>
@@ -1277,6 +1267,7 @@
     localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
     obStep = 3; 
     tutorialStep = 0;
+    isDirectTutorial = false; // Viene del flujo de registro inicial, por lo tanto debe mostrar la pantalla de "¡A entrenar!" al final
     renderOnboardingStep();
   }
 
@@ -1290,8 +1281,12 @@
       tutorialStep++;
       renderOnboardingStep();
     } else {
-      // Si vino desde el botón ❓ superior, cerrar modal directamente
-      closeModal('onboardingModal');
+      if(isDirectTutorial) {
+        closeModal('onboardingModal');
+      } else {
+        obStep = 4; // Mostrar pantalla "¡A entrenar!" con audio y confeti al terminar el registro inicial
+        renderOnboardingStep();
+      }
     }
   }
 
@@ -1300,21 +1295,6 @@
       tutorialStep--;
       renderOnboardingStep();
     }
-  }
-
-  function nextTutorialStep() {
-    if(tutorialStep < 2) {
-      tutorialStep++;
-      renderOnboardingStep();
-    } else {
-      obStep = 4;
-      renderOnboardingStep();
-    }
-  }
-
-  function showFinalTrainScreen() {
-    obStep = 5;
-    renderOnboardingStep();
   }
 
   function finishOnboarding() {
