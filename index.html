@@ -1131,7 +1131,6 @@
     let anomalyCount = 0;
     let tableRowsHtml = '';
 
-    // Agregamos un límite simulado o por fecha si es 4weeks, o tomamos todo
     for(let ex in historyData) {
       let records = historyData[ex] || [];
       if(rangeType === '4weeks' && records.length > 4) {
@@ -1490,6 +1489,51 @@
           </button>
         </div>
       `;
+    } else if(obStep === 2) {
+      // Paso específico interno para la configuración manual paso a paso de los 7 días
+      const day = tempRoutine[wizardStep];
+      b.innerHTML = `
+        <div class="wizard-step-title">Día ${wizardStep + 1} de 7: ${day.label}</div>
+        <div class="wizard-step-sub">Elegí el enfoque muscular y tildá los ejercicios.</div>
+        <select id="onbGroupSelect" class="wizard-select">
+          ${Object.keys(PRESET_EXERCISES).concat(['Personalizado']).map(g => `<option value="${g}" ${day.group === g ? 'selected' : ''}>${g}</option>`).join('')}
+        </select>
+        <div class="wizard-list" id="onbWizardList" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
+        <div class="wizard-nav">
+          <button class="timer-btn" ${wizardStep === 0 ? 'style="visibility:hidden;"' : ''} onclick="onbWizardPrev()">Anterior</button>
+          <button class="timer-btn" style="background:var(--accent); color:#0E0E10;" onclick="onbWizardNext()">${wizardStep === 6 ? 'Siguiente al Tutorial ➔' : 'Siguiente ➔'}</button>
+        </div>
+      `;
+
+      document.getElementById('onbGroupSelect').addEventListener('change', (e) => {
+        day.group = e.target.value;
+        renderOnboardingStep();
+      });
+
+      const listContainer = document.getElementById('onbWizardList');
+      const availableEx = PRESET_EXERCISES[day.group] || day.exercises;
+      const combinedEx = Array.from(new Set([...availableEx, ...day.exercises]));
+
+      combinedEx.forEach(ex => {
+        const item = document.createElement('label');
+        item.className = 'wizard-item';
+        
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = day.exercises.includes(ex);
+        chk.addEventListener('change', (e) => {
+          if(e.target.checked) {
+            if(!day.exercises.includes(ex)) day.exercises.push(ex);
+          } else {
+            day.exercises = day.exercises.filter(i => i !== ex);
+          }
+        });
+
+        item.appendChild(chk);
+        item.appendChild(document.createTextNode(ex));
+        listContainer.appendChild(item);
+      });
+
     } else if(obStep === 3) {
       const cur = TUTORIALS_LIST[tutorialStep];
       b.innerHTML = `
@@ -1538,8 +1582,31 @@
   }
 
   function chooseCustomRoutineWizard() {
-    closeModal('onboardingModal');
-    openWizardModal();
+    wizardStep = 0;
+    tempRoutine = JSON.parse(JSON.stringify(DEFAULT_DAYS));
+    obStep = 2;
+    renderOnboardingStep();
+  }
+
+  function onbWizardNext() {
+    if(wizardStep < 6) {
+      wizardStep++;
+      renderOnboardingStep();
+    } else {
+      BASE_DAYS = tempRoutine;
+      localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
+      obStep = 3;
+      tutorialStep = 0;
+      isDirectTutorial = false;
+      renderOnboardingStep();
+    }
+  }
+
+  function onbWizardPrev() {
+    if(wizardStep > 0) {
+      wizardStep--;
+      renderOnboardingStep();
+    }
   }
 
   function nextTutorialPaginated() {
