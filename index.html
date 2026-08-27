@@ -361,6 +361,12 @@
     font-family: 'Anton', sans-serif; font-size: 48px; color: var(--accent);
     letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase;
   }
+
+  .science-box { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .science-box h4 { color: var(--accent); margin-top: 10px; margin-bottom: 4px; font-size: 13px; }
+  .science-box p { margin-bottom: 8px; }
+  .science-box ul { margin-left: 16px; margin-bottom: 8px; }
+  .science-source { font-size: 10px; color: var(--text-muted); font-style: italic; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -372,6 +378,7 @@
       <div class="eyebrow" id="weekLabel">Semana</div>
     </div>
     <div class="top-actions">
+      <button class="icon-nav-btn" onclick="openScienceModal()">📚 Ciencia</button>
       <button class="icon-nav-btn" onclick="openTutorialModal()">❓ Tutorial</button>
       <button class="icon-nav-btn" onclick="open1RMModal()">🧮 1RM</button>
       <button class="icon-nav-btn" onclick="openWizardModal()">⚙️ Rutina</button>
@@ -453,6 +460,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="scienceModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="scienceModalTitle">Guía Científica y Anatómica</div>
+      <button class="action-icon-btn" onclick="closeModal('scienceModal')">✖</button>
+    </div>
+    <div class="science-box" id="scienceModalBody"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="rmModal">
   <div class="modal-card">
     <div class="modal-header">
@@ -508,6 +525,98 @@
     'Descanso / Cardio': ['Cinta 30 min', 'Caminata 30 min', 'Bicicleta 20 min', 'Abdominales', 'Caminata ligera']
   };
 
+  const ANATOMY_SCIENCE_GUIDE = {
+    'pecho': {
+      title: 'Pectorales (Pecho)',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>Compuesto por el <em>Pectoral Mayor</em> (fascículos claviculares y esternocostales) y el <em>Pectoral Menor</em>. Su función principal es la aducción horizontal del hombro, la flexión y la rotación interna.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>Estudios demuestran que los ejercicios que enfatizan la posición de estiramiento profundo bajo carga (como el press inclinado con mancuernas o aperturas con rango completo) maximizan la tensión mecánica y el daño muscular favorable para el crecimiento.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Press Inclinado con Mancuernas:</strong> Permite un rango de movimiento mayor que la barra convencional, logrando una activación superior de la porción clavicular (superior).</p>
+        <div class="science-source">Fuentes: Schoenfeld, B. J. (2010) - The Mechanisms of Muscle Hypertrophy; ACE Electromyography Studies.</div>
+      `
+    },
+    'espalda': {
+      title: 'Espalda (Dorsales y Trapecios)',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>Integrado por el <em>Dorsal Ancho</em>, <em>Redondo Mayor</em>, <em>Romboides</em> y <em>Trapecio</em>. Su rol clave es la extensión del hombro, aducción y retracción escapular.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>Los agarres pronados anchos maximizan la anchura del dorsal ancho, mientras que los remos con codos pegados al cuerpo optimizan la activación de la porción media y romboides.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Dominadas (Pull-ups) y Remo con Barra:</strong> Movimientos multiarticulares con alta demanda de carga y máxima contracción en estiramiento.</p>
+        <div class="science-source">Fuentes: Journal of Strength and Conditioning Research; EMG Latissimus Dorsi Activation Analysis.</div>
+      `
+    },
+    'cuádriceps': {
+      title: 'Cuádriceps',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>Formado por el <em>Recto Femoral</em>, <em>Vasto Lateral</em>, <em>Vasto Medial</em> y <em>Vasto Intermedio</em>. Su función principal es la extensión de la rodilla.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>La flexión profunda de rodilla bajo tensión genera hipertrofia superior en los vastos y el recto femoral debido al estiramiento activo en el punto más bajo.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Sentadilla Libre Profunda / Sentadilla Búlgara:</strong> Rango de movimiento completo para reclutamiento óptimo de fibras musculares.</p>
+        <div class="science-source">Fuentes: McMahon et al. (2014) - Impact of range of motion on muscle hypertrophy.</div>
+      `
+    },
+    'femorales': {
+      title: 'Isquiosurales (Femorales)',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>Compuesto por el <em>Bíceps Femoral</em>, <em>Semitendinoso</em> y <em>Semimembranoso</em>. Participan en la flexión de la rodilla y extensión de la cadera.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>Combinar movimientos dominantes de cadera con elongación extrema (peso muerto rumano) con movimientos dominantes de rodilla (curl femoral) maximiza el desarrollo completo.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Peso Muerto Rumano:</strong> Excepcional para estiramiento bajo carga de los isquiosurales.</p>
+        <div class="science-source">Fuentes: Contreras et al. - Hamstring activation in hip extension exercises.</div>
+      `
+    },
+    'hombros': {
+      title: 'Hombros (Deltoides)',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>Dividido en <em>Deltoides Anterior</em>, <em>Lateral</em> y <em>Posterior</em>. El haz lateral es clave para conferir la estética de anchura en el torso.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>Las elevaciones laterales en polea superan a las mancuernas tradicionales debido a la curva de resistencia constante en todo el arco de movimiento.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Elevaciones Laterales en Polea y Press Militar.</strong></p>
+        <div class="science-source">Fuentes: ACE Study on Deltoid Muscle Activation.</div>
+      `
+    },
+    'brazos': {
+      title: 'Bíceps y Tríceps',
+      content: `
+        <h4>Anatomía y Biomecánica</h4>
+        <p>El bíceps braquial flexiona el codo y supina el antebrazo. El tríceps braquial (con tres cabezas) realiza la extensión del codo, siendo el responsable de ~60-70% del volumen del brazo.</p>
+        <h4>Evidencia sobre Hipertrofia</h4>
+        <p>Los ejercicios de tríceps por encima de la cabeza (overhead) estiran la cabeza larga del tríceps, provocando respuestas hipertróficas superiores.</p>
+        <h4>Ejercicio TOP Respaldado</h4>
+        <p><strong>Curl con Barra y Extensión de Tríceps en Polea por encima de la cabeza.</strong></p>
+        <div class="science-source">Fuentes: Maeo et al. (2022) - Tricep hypertrophy in overhead vs pushdown exercises.</div>
+      `
+    }
+  };
+
+  const EXERCISE_SCIENCE_MAP = {
+    'press de banca': 'pecho', 'press inclinado': 'pecho', 'aperturas': 'pecho',
+    'remo con barra': 'espalda', 'dominadas': 'espalda', 'jalón al pecho': 'espalda', 'remo en punta': 'espalda',
+    'sentadilla': 'cuádriceps', 'prensa de piernas': 'cuádriceps', 'extensión de cuádriceps': 'cuádriceps', 'sentadilla búlgara': 'cuádriceps', 'zancadas': 'cuádriceps',
+    'peso muerto rumano': 'femorales', 'curl femoral': 'femorales', 'buenos días': 'femorales',
+    'press militar': 'hombros', 'elevaciones laterales': 'hombros', 'face pull': 'hombros',
+    'curl de bíceps': 'brazos', 'extensión de tríceps': 'brazos', 'fondos': 'brazos'
+  };
+
+  function getCategoryForExercise(exName) {
+    const lower = exName.toLowerCase();
+    for(let key in EXERCISE_SCIENCE_MAP) {
+      if(lower.includes(key)) return EXERCISE_SCIENCE_MAP[key];
+    }
+    return 'pecho';
+  }
+
   const BEGINNER_PRESET_ROUTINE = [
     { id: 'lunes', label: 'Lunes', short: 'L', jsDay: 1, group: 'Tren superior', exercises: ['Press de banca', 'Remo con barra', 'Curl de bíceps'] },
     { id: 'martes', label: 'Martes', short: 'M', jsDay: 2, group: 'Descanso / Cardio', exercises: ['Caminata ligera'] },
@@ -560,7 +669,7 @@
   const TUTORIALS_LIST = [
     { title: '📌 Registro Diario', text: 'Tildá las casillas de los ejercicios a medida que los completes para ir aumentando tu racha diaria.' },
     { title: '⏱️ Temporizador', text: 'Usá los botones de 60s, 90s o 2m entre series para controlar tus tiempos de descanso exactos.' },
-    { title: '📈 Progresión y 1RM', text: 'Agregá tantas series como necesites con sus respectivos kilos/kilómetros y repeticiones. Tocá 📈 para ver tu gráfico y tendencias.' },
+    { title: '📈 Progresión y Ciencia', text: 'Agregá series, tocá 📈 para ver tu gráfico y tocá el ícono 🧠 en cualquier ejercicio para leer la biomecánica y fundamento científico respaldado.' },
     { title: '⚙️ Gestión de Rutina', text: 'Para agregar cualquier ejercicio extra o modificar tu rutina semanal completa en el futuro, tenés que ir siempre a la opción de Rutina (⚙️) arriba a la derecha.' }
   ];
 
@@ -683,6 +792,12 @@
       const toolsWrap = document.createElement('div');
       toolsWrap.className = 'ex-tools';
 
+      const scienceBtn = document.createElement('button');
+      scienceBtn.className = 'action-icon-btn';
+      scienceBtn.innerHTML = `🧠`;
+      scienceBtn.title = 'Ciencia y Biomecánica';
+      scienceBtn.addEventListener('click', (e) => { e.stopPropagation(); openExerciseScienceModal(ex); });
+
       const demoBtn = document.createElement('a');
       demoBtn.className = 'action-icon-btn';
       demoBtn.innerHTML = `🎥`;
@@ -695,6 +810,7 @@
       chartBtn.innerHTML = `📈`;
       chartBtn.addEventListener('click', (e) => { e.stopPropagation(); openChartModal(ex); });
 
+      toolsWrap.appendChild(scienceBtn);
       toolsWrap.appendChild(demoBtn);
       toolsWrap.appendChild(chartBtn);
 
@@ -965,6 +1081,30 @@
 
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+  function openScienceModal() {
+    document.getElementById('scienceModalTitle').textContent = 'Guía Científica General';
+    let html = '<p style="margin-bottom:10px; color:var(--text-muted);">Seleccioná un grupo muscular o consultá la ciencia detrás de tus ejercicios directamente con el ícono 🧠 al lado de cada movimiento.</p>';
+    for(let k in ANATOMY_SCIENCE_GUIDE) {
+      html += `<div style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px;">
+        <div style="font-weight:700; color:var(--accent); margin-bottom:6px;">${ANATOMY_SCIENCE_GUIDE[k].title}</div>
+        ${ANATOMY_SCIENCE_GUIDE[k].content}
+      </div>`;
+    }
+    document.getElementById('scienceModalBody').innerHTML = html;
+    document.getElementById('scienceModal').classList.add('active');
+  }
+
+  function openExerciseScienceModal(exName) {
+    const cat = getCategoryForExercise(exName);
+    const guide = ANATOMY_SCIENCE_GUIDE[cat] || ANATOMY_SCIENCE_GUIDE['pecho'];
+    document.getElementById('scienceModalTitle').textContent = `Ciencia: ${exName}`;
+    document.getElementById('scienceModalBody').innerHTML = `
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; font-weight:700;">Enfoque muscular: ${guide.title}</div>
+      ${guide.content}
+    `;
+    document.getElementById('scienceModal').classList.add('active');
+  }
+
   function openChartModal(exName) {
     document.getElementById('chartTitle').textContent = `Progresión: ${exName}`;
     document.getElementById('chartModal').classList.add('active');
@@ -1188,14 +1328,14 @@
   function openTutorialModal() {
     obStep = 3; 
     tutorialStep = 0;
-    isDirectTutorial = true; // Marcamos que se abrió desde el botón superior
+    isDirectTutorial = true;
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
   }
 
   function runOnboarding() {
     obStep = 0;
-    isDirectTutorial = false; // Viene del flujo inicial de registro
+    isDirectTutorial = false;
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
   }
@@ -1267,7 +1407,7 @@
     localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
     obStep = 3; 
     tutorialStep = 0;
-    isDirectTutorial = false; // Viene del flujo de registro inicial, por lo tanto debe mostrar la pantalla de "¡A entrenar!" al final
+    isDirectTutorial = false;
     renderOnboardingStep();
   }
 
@@ -1284,7 +1424,7 @@
       if(isDirectTutorial) {
         closeModal('onboardingModal');
       } else {
-        obStep = 4; // Mostrar pantalla "¡A entrenar!" con audio y confeti al terminar el registro inicial
+        obStep = 4;
         renderOnboardingStep();
       }
     }
