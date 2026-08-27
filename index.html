@@ -378,6 +378,7 @@
       <div class="eyebrow" id="weekLabel">Semana</div>
     </div>
     <div class="top-actions">
+      <button class="icon-nav-btn" onclick="openCalendarPromptModal()">📅 Historial</button>
       <button class="icon-nav-btn" onclick="openScienceModal()">🔬 Ciencia</button>
       <button class="icon-nav-btn" onclick="openTutorialModal()">❓ Tutorial</button>
       <button class="icon-nav-btn" onclick="open1RMModal()">🧮 1RM</button>
@@ -433,6 +434,36 @@
     </a>
     <div class="footer-copy">Copyright © 2026 · Todos los derechos reservados</div>
   </footer>
+</div>
+
+<!-- Modal Selector Prompt Inicial (Calendario) -->
+<div class="modal-overlay" id="calendarPromptModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📅 Ver historial y tendencias</div>
+      <button class="action-icon-btn" onclick="closeModal('calendarPromptModal')">✖</button>
+    </div>
+    <div class="wizard-step-sub" style="margin-bottom: 16px;">Seleccioná el rango de tiempo que querés analizar en la tabla analítica:</div>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+      <button class="timer-btn" style="width: 100%; padding: 12px; text-align: left; font-size: 13px; background: var(--surface-2);" onclick="openGlobalAnalyticsModal('4weeks')">
+        ⏱️ <strong>Últimas 4 semanas</strong><br><span style="font-size: 11px; color: var(--text-muted);">Enfoque en el progreso y rendimiento reciente.</span>
+      </button>
+      <button class="timer-btn" style="width: 100%; padding: 12px; text-align: left; font-size: 13px; background: var(--surface-2);" onclick="openGlobalAnalyticsModal('all')">
+        📊 <strong>Historial completo</strong><br><span style="font-size: 11px; color: var(--text-muted);">Análisis de todas las cargas registradas históricamente.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tabla Analítica Global con Tendencias y Anomalías -->
+<div class="modal-overlay" id="globalAnalyticsModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="globalAnalyticsTitle">Tabla Analítica y Tendencias</div>
+      <button class="action-icon-btn" onclick="closeModal('globalAnalyticsModal')">✖</button>
+    </div>
+    <div id="globalAnalyticsBody"></div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="chartModal">
@@ -582,7 +613,7 @@
         <h4>Evidencia sobre Hipertrofia</h4>
         <p>Las elevaciones laterales en polea superan a las mancuernas tradicionales debido a la curva de resistencia constante en todo el arco de movimiento.</p>
         <h4>Ejercicio TOP Respaldado</h4>
-        <p><strong>Elevaciones Laterales en Polea y Press Militar.</strong></p>
+        <p><strong>Elevaciones Lateral en Polea y Press Militar.</strong></p>
         <div class="science-source">Fuentes: ACE Study on Deltoid Muscle Activation.</div>
       `
     },
@@ -1083,6 +1114,99 @@
 
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+  // Funciones para el botón de Calendario y Análisis Global con Tendencias y Anomalías
+  function openCalendarPromptModal() {
+    document.getElementById('calendarPromptModal').classList.add('active');
+  }
+
+  function openGlobalAnalyticsModal(rangeType) {
+    closeModal('calendarPromptModal');
+    document.getElementById('globalAnalyticsModal').classList.add('active');
+    
+    const titleText = rangeType === '4weeks' ? 'Tendencias (Últimas 4 semanas)' : 'Tendencias (Historial completo)';
+    document.getElementById('globalAnalyticsTitle').textContent = titleText;
+    
+    let totalLogs = 0;
+    let positiveCount = 0;
+    let anomalyCount = 0;
+    let tableRowsHtml = '';
+
+    // Agregamos un límite simulado o por fecha si es 4weeks, o tomamos todo
+    for(let ex in historyData) {
+      let records = historyData[ex] || [];
+      if(rangeType === '4weeks' && records.length > 4) {
+        records = records.slice(-4);
+      }
+
+      records.forEach((rec, idx) => {
+        totalLogs++;
+        let tagHtml = '<span style="color: var(--text-muted);">Estable ⚡</span>';
+        if(idx > 0) {
+          const prevKg = records[idx - 1].kg;
+          if(rec.kg > prevKg) {
+            positiveCount++;
+            tagHtml = '<span style="color: #4E9F3D; font-weight:700;">🟢 Subida / Mejora (+PR)</span>';
+          } else if(rec.kg < prevKg) {
+            anomalyCount++;
+            tagHtml = '<span style="color: #D93829; font-weight:700;">⚠️ Bajada / Anomalía</span>';
+          }
+        } else {
+          tagHtml = '<span style="color: var(--text-muted);">🏁 Base inicial</span>';
+        }
+
+        tableRowsHtml += `
+          <tr>
+            <td>${rec.date}</td>
+            <td><strong>${ex}</strong></td>
+            <td>${rec.kg} kg</td>
+            <td>${rec.reps}</td>
+            <td>${tagHtml}</td>
+          </tr>
+        `;
+      });
+    }
+
+    const container = document.getElementById('globalAnalyticsBody');
+    if(totalLogs === 0) {
+      container.innerHTML = `<div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0;">No hay registros de cargas suficientes para mostrar tendencias ni anomalías todavía. ¡Registrá tus series en los entrenamientos!</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="trend-metrics" style="margin-bottom: 14px;">
+        <div class="trend-box">
+          <div class="trend-label">Registros</div>
+          <div class="trend-value">${totalLogs}</div>
+        </div>
+        <div class="trend-box">
+          <div class="trend-label">Progresos</div>
+          <div class="trend-value" style="color: #4E9F3D;">+${positiveCount}</div>
+        </div>
+        <div class="trend-box">
+          <div class="trend-label">Anomalías/Bajas</div>
+          <div class="trend-value" style="color: #D93829;">${anomalyCount}</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text);">📋 Resumen de rendimiento global y detección de anomalías:</div>
+      <div style="max-height: 280px; overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Ejercicio</th>
+              <th>Carga</th>
+              <th>Reps</th>
+              <th>Estado / Anomalía</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
   function openScienceModal() {
     document.getElementById('scienceModalTitle').textContent = 'Guía Científica General';
     let html = '<p style="margin-bottom:10px; color:var(--text-muted);">Seleccioná un grupo muscular o consultá la ciencia detrás de tus ejercicios directamente con el ícono 🧠 al lado de cada movimiento.</p>';
@@ -1152,13 +1276,13 @@
       `;
 
       data.forEach((item, idx) => {
-        let statusTag = 'Estable ⚡';
+        let statusTag = '<span style="color:var(--text-muted);">Estable ⚡</span>';
         if(idx > 0) {
           const prev = data[idx - 1].kg;
-          if(item.kg > prev) statusTag = '📈 Subida (PR)';
-          else if(item.kg < prev) statusTag = '⚠️ Baja (Anomalía)';
+          if(item.kg > prev) statusTag = '<span style="color:#4E9F3D; font-weight:700;">📈 Subida (PR)</span>';
+          else if(item.kg < prev) statusTag = '<span style="color:#D93829; font-weight:700;">⚠️ Baja (Anomalía)</span>';
         } else {
-          statusTag = '🏁 Base';
+          statusTag = '<span style="color:var(--text-muted);">🏁 Base</span>';
         }
 
         tableHtml += `
