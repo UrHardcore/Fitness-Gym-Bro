@@ -21,6 +21,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --bg: #0E0E10;
@@ -367,11 +372,154 @@
   .science-box p { margin-bottom: 8px; }
   .science-box ul { margin-left: 16px; margin-bottom: 8px; }
   .science-source { font-size: 10px; color: var(--text-muted); font-style: italic; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 10px; }
+
+  /* ===== AUTH SCREEN ===== */
+  #authScreen {
+    position: fixed; inset: 0; background: var(--bg); z-index: 200;
+    display: flex; align-items: center; justify-content: center; padding: 24px 18px;
+  }
+  .auth-card { width: 100%; max-width: 400px; }
+  .auth-logo {
+    font-family: 'Anton', sans-serif; font-size: 40px; text-transform: uppercase;
+    text-align: center; margin-bottom: 4px; letter-spacing: 0.01em;
+  }
+  .auth-tagline { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 22px; }
+
+  .auth-tabs {
+    display: flex; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 3px; margin-bottom: 18px;
+  }
+  .auth-tab {
+    flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: 700;
+    color: var(--text-muted); border-radius: 8px; cursor: pointer; background: none; border: none;
+  }
+  .auth-tab.active { background: var(--accent); color: #0E0E10; }
+
+  .auth-field { margin-bottom: 12px; }
+  .auth-field label { display:block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+  .auth-field input {
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--text);
+  }
+  .auth-field input:focus { outline: none; border-color: var(--accent); }
+
+  .auth-forgot { text-align: right; margin: -4px 0 14px; }
+  .auth-forgot button {
+    background: none; border: none; color: var(--accent); font-size: 12px;
+    font-weight: 600; cursor: pointer; padding: 0;
+  }
+
+  .auth-primary-btn {
+    width: 100%; background: var(--accent); color: #0E0E10; border: none;
+    border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+    margin-bottom: 14px; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .auth-primary-btn:disabled { opacity: 0.6; cursor: default; }
+
+  .auth-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background: var(--border); }
+  .auth-divider span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+  .auth-google-btn {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+
+  .auth-error {
+    background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent);
+    font-size: 12px; padding: 8px 10px; border-radius: 8px; margin-bottom: 14px; display: none;
+  }
+  .auth-error.show { display: block; }
+
+  .auth-info {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-muted);
+    font-size: 12px; padding: 8px 10px; border-radius: 8px; margin-bottom: 14px; display: none;
+  }
+  .auth-info.show { display: block; }
+
+  .auth-loading { text-align: center; color: var(--text-muted); font-size: 13px; }
+
+  .auth-spinner {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(14,14,16,0.3); border-top-color: #0E0E10;
+    animation: auth-spin 0.7s linear infinite;
+  }
+  @keyframes auth-spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<div class="card">
+<!-- ===== PANTALLA DE LOGIN / REGISTRO ===== -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div id="authLoadingView" class="auth-loading">Cargando…</div>
+
+    <div id="authFormView" style="display:none;">
+      <div class="auth-logo">LiftLog</div>
+      <div class="auth-tagline">Iniciá sesión para llevar tu progreso a cualquier dispositivo</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Iniciar sesión</button>
+        <button class="auth-tab" id="authTabRegister" onclick="switchAuthTab('register')">Registrarme</button>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-info" id="authInfo"></div>
+
+      <!-- LOGIN -->
+      <form id="loginFormEl" onsubmit="return handleLoginSubmit(event)">
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div class="auth-forgot">
+          <button type="button" onclick="handleForgotPassword()">¿Olvidaste tu contraseña?</button>
+        </div>
+        <button type="submit" class="auth-primary-btn" id="loginSubmitBtn">Ingresar</button>
+      </form>
+
+      <!-- REGISTRO -->
+      <form id="registerFormEl" style="display:none;" onsubmit="return handleRegisterSubmit(event)">
+        <div class="auth-field">
+          <label>Nombre</label>
+          <input type="text" id="registerName" placeholder="Tu nombre" required autocomplete="name">
+        </div>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="registerEmail" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label>Contraseña</label>
+          <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" minlength="6">
+        </div>
+        <div class="auth-field">
+          <label>Repetir contraseña</label>
+          <input type="password" id="registerPassword2" placeholder="••••••••" required autocomplete="new-password" minlength="6">
+        </div>
+        <button type="submit" class="auth-primary-btn" id="registerSubmitBtn">Crear cuenta</button>
+      </form>
+
+      <div class="auth-divider"><span>o</span></div>
+
+      <button type="button" class="auth-google-btn" id="googleSignInBtn" onclick="handleGoogleSignIn()">
+        <svg width="16" height="16" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+          <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+          <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+          <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+        </svg>
+        Continuar con Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="appCard" style="display:none;">
   <div class="header-top">
     <div>
       <div id="userGreeting" style="font-size:13px; font-weight:700; color:var(--text);">Hola</div>
@@ -384,6 +532,7 @@
       <button class="icon-nav-btn" onclick="open1RMModal()">🧮 1RM</button>
       <button class="icon-nav-btn" onclick="openWizardModal()">⚙️ Rutina</button>
       <button class="theme-toggle" id="themeBtn">☀️ / 🌙</button>
+      <button class="icon-nav-btn" id="logoutBtn" title="Cerrar sesión">🚪</button>
     </div>
   </div>
 
@@ -541,6 +690,57 @@
 </div>
 
 <script>
+  /* ===== FIREBASE ===== */
+  // ⚠️ Reemplazá estos valores por los de tu proyecto:
+  // Firebase Console → ⚙️ Configuración del proyecto → General → Tus apps → SDK de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBoSoN2UiK-9FpylWr1MTxqyhVBKy3Rf04",
+    authDomain: "lift-log-bro.firebaseapp.com",
+    projectId: "lift-log-bro",
+    storageBucket: "lift-log-bro.firebasestorage.app",
+    messagingSenderId: "958814152861",
+    appId: "1:958814152861:web:cbbea7f97285c085484c74",
+    measurementId: "G-QWV8M8B6M5"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  // Forzamos persistencia local explícita: la sesión sobrevive a recargas y cierres del navegador.
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => console.error('No se pudo fijar persistencia de auth', e));
+
+  let currentUser = null;
+  let pendingRegisterName = ''; // nombre cargado en el form de registro, para no perder tiempo esperando a Firestore
+
+  /* ===== CACHÉ LOCAL (respaldo instantáneo mientras se confirma la sesión / se sincroniza con Firestore) ===== */
+  const LAST_UID_KEY = 'gym-last-uid';
+  const cacheKey = (uid) => 'gym-cache:' + uid;
+
+  function loadLocalCache(uid) {
+    try {
+      const raw = localStorage.getItem(cacheKey(uid));
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+
+  function writeLocalCache() {
+    if(!currentUser) return;
+    try {
+      const snapshot = {
+        userName, customRoutine: BASE_DAYS, extra, historyData, streak,
+        weeks: { [weekId]: { days: dayState, exercises: exState } }
+      };
+      localStorage.setItem(cacheKey(currentUser.uid), JSON.stringify(snapshot));
+      localStorage.setItem(LAST_UID_KEY, currentUser.uid);
+    } catch(e) { console.error('No se pudo guardar el caché local', e); }
+  }
+
+  function clearLocalCache(uid) {
+    try {
+      localStorage.removeItem(cacheKey(uid));
+      if(localStorage.getItem(LAST_UID_KEY) === uid) localStorage.removeItem(LAST_UID_KEY);
+    } catch(e) {}
+  }
+
   const MOTIVATIONAL_QUOTES = [
     '"La constancia vence a la intensidad."',
     '"Cada repetición te acerca a tu meta."',
@@ -682,7 +882,9 @@
   const today = new Date();
   const monday = getMonday(today);
   const sunday = new Date(monday); sunday.setDate(sunday.getDate()+6);
-  const weekKey = 'gym-week:' + monday.toISOString().slice(0,10);
+  const weekId = monday.toISOString().slice(0,10);
+  // Claves viejas de localStorage (se usan solo para migrar datos de una sesión previa sin login)
+  const weekKey = 'gym-week:' + weekId;
   const customRoutineKey = 'gym-custom-routine';
   const extraKey = 'gym-routine-extra';
   const historyKey = 'gym-routine-history';
@@ -696,6 +898,7 @@
   let timerInterval = null, timerSeconds = 0;
   let wizardStep = 0, tempRoutine = [], userName = '';
   let obStep = 0, tutorialStep = 0, isDirectTutorial = false;
+  let needsOnboarding = true;
 
   const TUTORIALS_LIST = [
     { title: '📌 Registro Diario', text: 'Tildá las casillas de los ejercicios a medida que los completes para ir aumentando tu racha diaria.' },
@@ -761,30 +964,108 @@
     document.getElementById('timerDisplay').textContent = `${m}:${s}`;
   }
 
-  function loadState(){
-    userName = localStorage.getItem(userNameKey) || '';
-    try {
-      const savedRoutine = localStorage.getItem(customRoutineKey);
-      BASE_DAYS = savedRoutine ? JSON.parse(savedRoutine) : DEFAULT_DAYS;
+  function userDocRef() { return db.collection('users').doc(currentUser.uid); }
 
-      const parsed = JSON.parse(localStorage.getItem(weekKey)) || {};
-      dayState = parsed.days || {};
-      exState = parsed.exercises || {};
-      extra = JSON.parse(localStorage.getItem(extraKey)) || {};
-      historyData = JSON.parse(localStorage.getItem(historyKey)) || {};
-      streak = parseInt(localStorage.getItem(streakKey) || '0', 10);
-    } catch(e) { BASE_DAYS = DEFAULT_DAYS; }
+  /* ===== NOMBRE DE USUARIO ÚNICO =====
+     Se guarda una colección aparte "usernames/{nombre_normalizado}" que reserva
+     cada nombre y apunta al uid del dueño, para poder chequear disponibilidad
+     sin tener que leer los documentos de otros usuarios. */
+  function normalizeUsername(name) { return name.trim().toLowerCase(); }
+
+  async function isUsernameTaken(normalized, excludeUid) {
+    const doc = await db.collection('usernames').doc(normalized).get();
+    if(!doc.exists) return false;
+    return doc.data().uid !== excludeUid;
+  }
+
+  async function claimUsername(normalized, displayName, uid) {
+    await db.collection('usernames').doc(normalized).set({ uid: uid, displayName: displayName });
+  }
+
+  // Migra datos que hayan quedado guardados en este dispositivo (de cuando la app
+  // todavía no tenía login) hacia el documento de Firestore del usuario, una sola vez.
+  async function migrateLocalDataIfNeeded(docSnap) {
+    try {
+      if(docSnap.exists) return;
+      const localName = localStorage.getItem(userNameKey);
+      if(!localName) return;
+      const localRoutine = JSON.parse(localStorage.getItem(customRoutineKey) || 'null');
+      const localWeek = JSON.parse(localStorage.getItem(weekKey) || '{}');
+      const localExtra = JSON.parse(localStorage.getItem(extraKey) || '{}');
+      const localHistory = JSON.parse(localStorage.getItem(historyKey) || '{}');
+      const localStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
+      await userDocRef().set({
+        userName: localName,
+        customRoutine: localRoutine || DEFAULT_DAYS,
+        extra: localExtra,
+        historyData: localHistory,
+        streak: localStreak,
+        weeks: { [weekId]: { days: localWeek.days || {}, exercises: localWeek.exercises || {} } }
+      }, { merge: true });
+    } catch(e) { console.error('Migración local→nube falló', e); }
+  }
+
+  async function loadState(){
+    userName = ''; BASE_DAYS = DEFAULT_DAYS; dayState = {}; exState = {}; extra = {}; historyData = {}; streak = 0; needsOnboarding = true;
+    if(!currentUser) return;
+
+    const cached = loadLocalCache(currentUser.uid);
+
+    try {
+      const docSnap = await userDocRef().get();
+      await migrateLocalDataIfNeeded(docSnap);
+      const snap = docSnap.exists ? docSnap : await userDocRef().get();
+      const data = snap.exists ? snap.data() : {};
+
+      userName = data.userName || '';
+      needsOnboarding = !data.customRoutine;
+      BASE_DAYS = data.customRoutine || DEFAULT_DAYS;
+      const weekData = (data.weeks && data.weeks[weekId]) || {};
+      dayState = weekData.days || {};
+      exState = weekData.exercises || {};
+      extra = data.extra || {};
+      historyData = data.historyData || {};
+      streak = data.streak || 0;
+    } catch(e) {
+      // Sin conexión con Firestore: usamos el último respaldo guardado en este dispositivo
+      console.error('Error cargando datos de Firestore, usando caché local', e);
+      if(cached) {
+        userName = cached.userName || '';
+        needsOnboarding = !cached.customRoutine;
+        BASE_DAYS = cached.customRoutine || DEFAULT_DAYS;
+        const weekData = (cached.weeks && cached.weeks[weekId]) || {};
+        dayState = weekData.days || {};
+        exState = weekData.exercises || {};
+        extra = cached.extra || {};
+        historyData = cached.historyData || {};
+        streak = cached.streak || 0;
+      } else {
+        BASE_DAYS = DEFAULT_DAYS;
+        needsOnboarding = true;
+      }
+    }
+
+    // Si venimos de un registro recién hecho, no hace falta esperar la ida y vuelta a Firestore para el nombre
+    if(!userName && pendingRegisterName) {
+      userName = pendingRegisterName;
+      saveUserName();
+    }
+    pendingRegisterName = '';
 
     BASE_DAYS.forEach(d => {
       if(!(d.id in dayState)) dayState[d.id] = false;
       if(!(d.id in exState)) exState[d.id] = {};
     });
+
+    writeLocalCache();
   }
 
-  function saveWeekState(){ localStorage.setItem(weekKey, JSON.stringify({ days: dayState, exercises: exState })); }
-  function saveExtra(){ localStorage.setItem(extraKey, JSON.stringify(extra)); }
-  function saveHistory(){ localStorage.setItem(historyKey, JSON.stringify(historyData)); }
-  function saveStreak(){ localStorage.setItem(streakKey, streak.toString()); }
+  function saveWeekState(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ weeks: { [weekId]: { days: dayState, exercises: exState } } }, { merge: true }).catch(e => console.error(e)); }
+  function saveExtra(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ extra: extra }, { merge: true }).catch(e => console.error(e)); }
+  function saveHistory(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ historyData: historyData }, { merge: true }).catch(e => console.error(e)); }
+  function saveStreak(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ streak: streak }, { merge: true }).catch(e => console.error(e)); }
+  function saveRoutine(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ customRoutine: BASE_DAYS }, { merge: true }).catch(e => console.error(e)); }
+  function saveUserName(){ if(!currentUser) return; writeLocalCache(); userDocRef().set({ userName: userName }, { merge: true }).catch(e => console.error(e)); }
 
   function fullExercises(d){ return (d.exercises || []).concat(extra[d.id] || []); }
 
@@ -1437,7 +1718,7 @@
       renderWizardStep();
     } else {
       BASE_DAYS = tempRoutine;
-      localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
+      saveRoutine();
       closeModal('wizardModal');
       render();
     }
@@ -1458,8 +1739,8 @@
     renderOnboardingStep();
   }
 
-  function runOnboarding() {
-    obStep = 0;
+  function runOnboarding(skipNameStep) {
+    obStep = skipNameStep ? 1 : 0;
     isDirectTutorial = false;
     document.getElementById('onboardingModal').classList.add('active');
     renderOnboardingStep();
@@ -1470,11 +1751,13 @@
     b.innerHTML = '';
 
     if(obStep === 0) {
+      const suggested = (currentUser && currentUser.displayName) ? currentUser.displayName : '';
       b.innerHTML = `
         <div class="wizard-step-title">¡Bienvenido/a a LiftLog!</div>
-        <div class="wizard-step-sub">Para empezar a armar tu experiencia, ¿cómo te llamás?</div>
-        <input type="text" id="obNameInput" class="wizard-select" placeholder="Ingresá tu nombre" style="margin-bottom:20px;">
-        <button class="timer-btn" style="width:100%; padding:10px; background:var(--accent); color:#0E0E10;" onclick="saveOnboardingName()">Siguiente ➔</button>
+        <div class="wizard-step-sub">Para empezar a armar tu experiencia, ¿cómo te llamás? Este nombre te identifica dentro de LiftLog, así que tiene que ser único.</div>
+        <input type="text" id="obNameInput" class="wizard-select" placeholder="Ingresá tu nombre" value="${suggested.replace(/"/g, '&quot;')}" style="margin-bottom:6px;">
+        <div id="obNameError" style="display:none; color:var(--accent); font-size:12px; margin-bottom:14px;"></div>
+        <button class="timer-btn" id="obNameSubmitBtn" style="width:100%; padding:10px; background:var(--accent); color:#0E0E10;" onclick="saveOnboardingName()">Siguiente ➔</button>
       `;
     } else if(obStep === 1) {
       b.innerHTML = `
@@ -1560,21 +1843,45 @@
     }
   }
 
-  function saveOnboardingName() {
-    const v = document.getElementById('obNameInput').value.trim();
-    if(v) {
+  function showObNameError(msg) {
+    const el = document.getElementById('obNameError');
+    if(el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+
+  async function saveOnboardingName() {
+    const input = document.getElementById('obNameInput');
+    const btn = document.getElementById('obNameSubmitBtn');
+    const v = input.value.trim();
+
+    if(!v) { showObNameError('Por favor, ingresá tu nombre.'); return; }
+
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Verificando…';
+    try {
+      const normalized = normalizeUsername(v);
+      const taken = await isUsernameTaken(normalized, currentUser.uid);
+      if(taken) {
+        showObNameError('Ese nombre ya está en uso. Elegí otro para identificarte.');
+        return;
+      }
+      await claimUsername(normalized, v, currentUser.uid);
       userName = v;
-      localStorage.setItem(userNameKey, userName);
+      saveUserName();
       obStep = 1;
       renderOnboardingStep();
-    } else {
-      alert('Por favor, ingresá tu nombre.');
+    } catch(e) {
+      console.error(e);
+      showObNameError('No pudimos verificar el nombre. Probá de nuevo.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     }
   }
 
   function choosePresetRoutine() {
     BASE_DAYS = BEGINNER_PRESET_ROUTINE;
-    localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
+    saveRoutine();
     obStep = 3; 
     tutorialStep = 0;
     isDirectTutorial = false;
@@ -1594,7 +1901,7 @@
       renderOnboardingStep();
     } else {
       BASE_DAYS = tempRoutine;
-      localStorage.setItem(customRoutineKey, JSON.stringify(BASE_DAYS));
+      saveRoutine();
       obStep = 3;
       tutorialStep = 0;
       isDirectTutorial = false;
@@ -1648,14 +1955,14 @@
     const file = e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const parsed = JSON.parse(evt.target.result);
-        if(parsed.routine) localStorage.setItem(customRoutineKey, JSON.stringify(parsed.routine));
-        if(parsed.history) localStorage.setItem(historyKey, JSON.stringify(parsed.history));
-        if(parsed.streak) localStorage.setItem(streakKey, parsed.streak.toString());
-        if(parsed.userName) localStorage.setItem(userNameKey, parsed.userName);
-        loadState(); render(); closeModal('wizardModal');
+        if(parsed.routine) { BASE_DAYS = parsed.routine; saveRoutine(); }
+        if(parsed.history) { historyData = parsed.history; saveHistory(); }
+        if(parsed.streak) { streak = parsed.streak; saveStreak(); }
+        if(parsed.userName) { userName = parsed.userName; saveUserName(); }
+        await loadState(); render(); closeModal('wizardModal');
       } catch(err) { alert('Archivo JSON inválido'); }
     };
     reader.readAsText(file);
@@ -1675,12 +1982,182 @@
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
-  loadState();
-  if(!userName) {
-    runOnboarding();
-  } else {
-    render();
+  /* ===== AUTENTICACIÓN ===== */
+
+  function switchAuthTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('authTabLogin').classList.toggle('active', isLogin);
+    document.getElementById('authTabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('loginFormEl').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('registerFormEl').style.display = isLogin ? 'none' : 'block';
+    hideAuthMessages();
   }
+
+  function hideAuthMessages() {
+    document.getElementById('authError').classList.remove('show');
+    document.getElementById('authInfo').classList.remove('show');
+  }
+  function showAuthError(msg) {
+    hideAuthMessages();
+    const el = document.getElementById('authError');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  function showAuthInfo(msg) {
+    hideAuthMessages();
+    const el = document.getElementById('authInfo');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  function translateAuthError(code) {
+    const map = {
+      'auth/invalid-email': 'El email no es válido.',
+      'auth/user-disabled': 'Esta cuenta fue deshabilitada.',
+      'auth/user-not-found': 'No existe una cuenta con ese email.',
+      'auth/wrong-password': 'Contraseña incorrecta.',
+      'auth/invalid-credential': 'Email o contraseña incorrectos.',
+      'auth/email-already-in-use': 'Ya existe una cuenta con ese email.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/too-many-requests': 'Demasiados intentos. Probá de nuevo en unos minutos.',
+      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.',
+      'auth/network-request-failed': 'Error de conexión. Revisá tu internet.'
+    };
+    return map[code] || 'Ocurrió un error. Intentá de nuevo.';
+  }
+
+  function setAuthLoadingBtn(btnId, loading, originalText) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<span class="auth-spinner"></span>' : originalText;
+  }
+
+  async function handleLoginSubmit(e) {
+    e.preventDefault();
+    hideAuthMessages();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    setAuthLoadingBtn('loginSubmitBtn', true, 'Ingresar');
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch(err) {
+      showAuthError(translateAuthError(err.code));
+    } finally {
+      setAuthLoadingBtn('loginSubmitBtn', false, 'Ingresar');
+    }
+    return false;
+  }
+
+  async function handleRegisterSubmit(e) {
+    e.preventDefault();
+    hideAuthMessages();
+    const name = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const password2 = document.getElementById('registerPassword2').value;
+
+    if(password !== password2) {
+      showAuthError('Las contraseñas no coinciden.');
+      return false;
+    }
+
+    setAuthLoadingBtn('registerSubmitBtn', true, 'Crear cuenta');
+    try {
+      const normalized = normalizeUsername(name);
+      const taken = await isUsernameTaken(normalized, null);
+      if(taken) {
+        showAuthError('Ese nombre ya está en uso. Elegí otro para identificarte.');
+        return false;
+      }
+
+      pendingRegisterName = name; // así el primer loadState() no necesita esperar la ida y vuelta a Firestore
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      await claimUsername(normalized, name, cred.user.uid);
+      await db.collection('users').doc(cred.user.uid).set({ userName: name }, { merge: true });
+    } catch(err) {
+      pendingRegisterName = '';
+      showAuthError(err.code ? translateAuthError(err.code) : 'No pudimos verificar el nombre. Probá de nuevo.');
+    } finally {
+      setAuthLoadingBtn('registerSubmitBtn', false, 'Crear cuenta');
+    }
+    return false;
+  }
+
+  async function handleGoogleSignIn() {
+    hideAuthMessages();
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    } catch(err) {
+      if(err.code !== 'auth/popup-closed-by-user') showAuthError(translateAuthError(err.code));
+    }
+  }
+
+  async function handleForgotPassword() {
+    hideAuthMessages();
+    const email = document.getElementById('loginEmail').value.trim();
+    if(!email) {
+      showAuthError('Ingresá tu email arriba y volvé a tocar "¿Olvidaste tu contraseña?".');
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showAuthInfo('Te enviamos un email a ' + email + ' para restablecer tu contraseña.');
+    } catch(err) {
+      showAuthError(translateAuthError(err.code));
+    }
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    if(currentUser) clearLocalCache(currentUser.uid);
+    auth.signOut();
+  });
+
+  // Arranque instantáneo: si hay un respaldo local de la última sesión, lo pintamos
+  // de inmediato sin esperar a que Firebase confirme la sesión por red.
+  (function bootFromLocalCache(){
+    try {
+      const lastUid = localStorage.getItem(LAST_UID_KEY);
+      if(!lastUid) return;
+      const cached = loadLocalCache(lastUid);
+      if(!cached || !cached.customRoutine) return; // sin respaldo útil, esperamos la confirmación normal
+
+      userName = cached.userName || '';
+      BASE_DAYS = cached.customRoutine || DEFAULT_DAYS;
+      const weekData = (cached.weeks && cached.weeks[weekId]) || {};
+      dayState = weekData.days || {};
+      exState = weekData.exercises || {};
+      extra = cached.extra || {};
+      historyData = cached.historyData || {};
+      streak = cached.streak || 0;
+      BASE_DAYS.forEach(d => { if(!(d.id in dayState)) dayState[d.id] = false; if(!(d.id in exState)) exState[d.id] = {}; });
+
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('appCard').style.display = 'block';
+      render();
+    } catch(e) { console.error('No se pudo pintar desde el caché local', e); }
+  })();
+
+  auth.onAuthStateChanged(async (user) => {
+    if(user) {
+      currentUser = user;
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('appCard').style.display = 'block';
+      await loadState();
+      if(needsOnboarding) {
+        runOnboarding(!!userName); // si ya sabemos el nombre (ej: recién registrado), saltamos ese paso
+      } else {
+        render();
+      }
+    } else {
+      currentUser = null;
+      document.getElementById('appCard').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('authLoadingView').style.display = 'none';
+      document.getElementById('authFormView').style.display = 'block';
+    }
+  });
 </script>
 </body>
 </html>
